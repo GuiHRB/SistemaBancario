@@ -1,32 +1,33 @@
 def menu():
 
     print(f""" 
-    =============== MENU ===============
+=============== MENU ===============
 
-    [1]\tDepositar
-    [2]\tSacar                          
-    [3]\tExtrato
-    [4]\tNovo Usuário
-    [5]\tNova Conta
-    [6]\tListar Contas
+[1]\tDepositar
+[2]\tSacar                          
+[3]\tExtrato
+[4]\tNovo Usuário
+[5]\tNova Conta
+[6]\tListar Contas
 
-    [0]\tSair  
-    """)
+[0]\tSair  
+""")
     return input("=> ")
-    
-def criar_usuario(lista, len):
+
+def filtro(lista,cpf):
+    for dado in lista:
+        if cpf in dado["cpf"]:
+            return True,dado
+    return False, None
+
+def criar_usuario(lista):
     payload = {}
     dados = ("nome", "data de nascimento", "cpf", "endereço")
     for dado in dados:
         payload[dado] = input(f"Digite {dado}: ")
-    if len > 0:
-        for dado in range(0,len):
-            if payload["cpf"] in lista[dado]["cpf"]:
-                print(f"Cpf informado já vinculado em outro usuário!")
-                break
-            elif dado == len - 1:
-                lista.append(payload)
-                print(f"Usuário cadastrado com sucesso!")
+    check,dado = filtro(lista,payload["cpf"])
+    if check:
+        print(f"Cpf informado já vinculado em outro usuário!")
     else:
         lista.append(payload)
         print(f"Usuário cadastrado com sucesso!")
@@ -34,29 +35,25 @@ def criar_usuario(lista, len):
 def listar_conta(contas):
     for conta in contas:
         print(f"""
-    ##################################### 
-                
-    Agência:\t{conta["agência"]}
-    C/C:\t\t{conta["número_conta"]}
-    Titular:\t{conta["usuário"]["nome"]}
+##################################### 
+              
+Agência:\t{conta["agência"]}
+C/C:\t\t{conta["número_conta"]}
+Titular:\t{conta["usuário"]["nome"]}
             """)
 
-def criar_conta(lista,user,len_user,len_lista):
+def criar_conta(lista,user,len_lista):
 
     payload = {"agência":"0001"}
     cpf = input(f"Digite o cpf que você quer vincular essa conta: ")
-    if len_user > 0:
-        for dado in range(0,len_user):
-            if cpf in user[dado]["cpf"]:
-                payload["número_conta"] = str(len_lista+1)
-                payload["usuário"] = user[dado]
-                lista.append(payload)
-                print(f"Conta criada!")
-                break
-            elif dado == len_user - 1:
-                print(f"Usuário não encontrado!")
+    check, dado = filtro(user,cpf)
+    if check:
+        payload["número_conta"] = str(len_lista+1)
+        payload["usuário"] = dado
+        lista.append(payload)
+        print(f"Conta criada!")
     else:
-        print(f"Não há usuários cadastrados!")
+        print(f"Usuário não encontrado!")
 
 def saque(*,saldo,extrato,saques,l_saque,l_saques):
     saque = float(input("Digite o valor do saque: "))
@@ -71,7 +68,7 @@ def saque(*,saldo,extrato,saques,l_saque,l_saques):
                 saldo -= saque
                 extrato += f"""
         Saque de R$ {saque:.2f}
-    """
+"""
                 saques += 1
     else:  
         print("Limite de saques diários atingido!")
@@ -86,7 +83,7 @@ def deposito(saldo,extrato,/):
         saldo += deposito
         extrato += f"""
         Depósito de R$ {deposito:.2f}
-    """
+"""
     return saldo,extrato
 
 def ver_extrato(saldo,extrato):
@@ -122,10 +119,10 @@ while True:
         ver_extrato(saldo,extrato)
 
     elif choice == "4":
-        criar_usuario(usuario,len(usuario))
+        criar_usuario(usuario)
 
     elif choice == "5":
-        criar_conta(conta_corrente,usuario,len(usuario),len(conta_corrente))
+        criar_conta(conta_corrente,usuario,len(conta_corrente))
     
     elif choice == "6":
         listar_conta(conta_corrente)
@@ -134,4 +131,4 @@ while True:
         break
 
     else:
-        print("Opção Inválida")    
+        print("Opção Inválida")
